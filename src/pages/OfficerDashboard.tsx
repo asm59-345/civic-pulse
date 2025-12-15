@@ -10,19 +10,20 @@ import { SubmitGrievanceForm } from '@/components/citizen/SubmitGrievanceForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  mockGrievances, 
   mockOfficers, 
   mockDashboardStats, 
   mockHeatmapPoints 
 } from '@/data/mockData';
+import { useGrievances } from '@/hooks/useGrievances';
 import { Grievance } from '@/types/grievance';
-import { Plus, Filter, TrendingUp, Users, Target, Brain } from 'lucide-react';
+import { Plus, Filter, TrendingUp, Users, Brain, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const OfficerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedGrievance, setSelectedGrievance] = useState<Grievance | null>(null);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
+  const { grievances, isLoading, refresh } = useGrievances();
 
   const handleApplyAI = () => {
     toast.success('AI recommendations applied', {
@@ -45,6 +46,10 @@ const OfficerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold">Recent Grievances</h2>
                   <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={refresh}>
+                      <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
                     <Button variant="outline" size="sm">
                       <Filter className="h-4 w-4 mr-1" />
                       Filter
@@ -55,11 +60,17 @@ const OfficerDashboard = () => {
                     </Button>
                   </div>
                 </div>
-                <GrievanceList
-                  grievances={mockGrievances}
-                  onSelect={setSelectedGrievance}
-                  selectedId={selectedGrievance?.id}
-                />
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <GrievanceList
+                    grievances={grievances}
+                    onSelect={setSelectedGrievance}
+                    selectedId={selectedGrievance?.id}
+                  />
+                )}
               </div>
 
               {/* Right Sidebar */}
@@ -123,11 +134,17 @@ const OfficerDashboard = () => {
               </Button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <GrievanceList
-                grievances={mockGrievances}
-                onSelect={setSelectedGrievance}
-                selectedId={selectedGrievance?.id}
-              />
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <GrievanceList
+                  grievances={grievances}
+                  onSelect={setSelectedGrievance}
+                  selectedId={selectedGrievance?.id}
+                />
+              )}
               {selectedGrievance?.aiSuggestion && (
                 <AISuggestionCard
                   suggestion={selectedGrievance.aiSuggestion}
@@ -166,7 +183,7 @@ const OfficerDashboard = () => {
             </div>
             <div className="h-[600px]">
               <GrievanceMap
-                grievances={mockGrievances}
+                grievances={grievances}
                 heatmapPoints={mockHeatmapPoints}
                 selectedGrievance={selectedGrievance}
                 onMarkerClick={setSelectedGrievance}

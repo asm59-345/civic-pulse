@@ -6,10 +6,11 @@ import {
   MapPin, 
   Send, 
   X,
-  Upload,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,18 +18,11 @@ import { cn } from '@/lib/utils';
 import { GrievanceCategory } from '@/types/grievance';
 import { categoryLabels } from '@/data/mockData';
 import { toast } from 'sonner';
+import { processGrievancePipeline } from '@/services/grievanceService';
 
 interface SubmitGrievanceFormProps {
   onClose?: () => void;
-  onSubmit?: (data: GrievanceFormData) => void;
-}
-
-interface GrievanceFormData {
-  description: string;
-  category: GrievanceCategory;
-  location: { lat: number; lng: number; address: string };
-  attachments: File[];
-  isVoice: boolean;
+  onSubmit?: (data: any) => void;
 }
 
 const categories: { id: GrievanceCategory; label: string; icon: string }[] = [
@@ -48,12 +42,15 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
   const [isRecording, setIsRecording] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [citizenName, setCitizenName] = useState('');
+  const [citizenPhone, setCitizenPhone] = useState('');
+  const [ticketNumber, setTicketNumber] = useState('');
+  const [aiClassification, setAiClassification] = useState<any>(null);
+  const [processingStage, setProcessingStage] = useState('');
 
   const handleVoiceRecord = () => {
     setIsRecording(!isRecording);
     if (!isRecording) {
-      // Simulate voice recording
       setTimeout(() => {
         setDescription('Mere ghar ke samne paani bhara hai. Drain block hai aur paani nikal nahi raha hai. Please help.');
         setIsRecording(false);
@@ -90,31 +87,66 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
   };
 
   const handleSubmit = async () => {
-    if (!description || !category || !location) {
+    if (!description || !category || !location || !citizenName) {
       toast.error('Please fill all required fields');
       return;
     }
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success('Grievance submitted successfully!', {
-      description: 'Ticket #SGH-2024-001239 has been created. AI is analyzing your complaint.',
-    });
-    
-    setIsSubmitting(false);
-    setStep(4); // Success step
-    
-    if (onSubmit) {
-      onSubmit({
+    try {
+      // Stage 1: Submitting
+      setProcessingStage('Submitting grievance...');
+      
+      // Stage 2: AI Classification
+      setTimeout(() => setProcessingStage('AI classifying intent...'), 1000);
+      
+      // Stage 3: Semantic Search
+      setTimeout(() => setProcessingStage('Searching historical cases...'), 2500);
+      
+      // Stage 4: Geo-cluster Analysis
+      setTimeout(() => setProcessingStage('Analyzing geo-clusters...'), 4000);
+      
+      // Stage 5: Generating Insights
+      setTimeout(() => setProcessingStage('Generating AI insights...'), 5500);
+
+      const result = await processGrievancePipeline({
         description,
         category,
-        location,
-        attachments,
-        isVoice: false,
+        citizenName,
+        citizenPhone,
+        locationLat: location.lat,
+        locationLng: location.lng,
+        locationAddress: location.address,
+        locationWard: 'Ward 4',
       });
+
+      if (result) {
+        setTicketNumber(result.ticketNumber);
+        setAiClassification(result.classification);
+        
+        toast.success('Grievance submitted successfully!', {
+          description: `Ticket ${result.ticketNumber} has been created. AI is analyzing your complaint.`,
+        });
+        
+        setStep(4);
+        
+        if (onSubmit) {
+          onSubmit(result);
+        }
+      } else {
+        toast.error('Failed to submit grievance', {
+          description: 'Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error('An error occurred', {
+        description: 'Please try again later.',
+      });
+    } finally {
+      setIsSubmitting(false);
+      setProcessingStage('');
     }
   };
 
@@ -165,7 +197,33 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
           >
             <div>
               <label className="block text-sm font-medium mb-2">
-                Describe your issue
+                Your Name *
+              </label>
+              <input
+                type="text"
+                value={citizenName}
+                onChange={(e) => setCitizenName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full p-3 rounded-lg bg-muted border border-border focus:ring-2 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={citizenPhone}
+                onChange={(e) => setCitizenPhone(e.target.value)}
+                placeholder="+91 XXXXX XXXXX"
+                className="w-full p-3 rounded-lg bg-muted border border-border focus:ring-2 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Describe your issue *
               </label>
               <textarea
                 value={description}
@@ -202,7 +260,7 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
             <Button
               className="w-full"
               variant="accent"
-              disabled={!description}
+              disabled={!description || !citizenName}
               onClick={() => setStep(2)}
             >
               Continue
@@ -291,6 +349,10 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
           >
             <div className="p-4 rounded-lg bg-muted space-y-3">
               <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Name</p>
+                <p className="text-sm mt-1">{citizenName}</p>
+              </div>
+              <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Description</p>
                 <p className="text-sm mt-1">{description}</p>
               </div>
@@ -305,18 +367,29 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
             </div>
 
             <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+              <Brain className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium">AI Analysis Ready</p>
+                <p className="text-sm font-medium">AI Pipeline Ready</p>
                 <p className="text-xs text-muted-foreground">
-                  Once submitted, our AI will analyze your complaint, find similar historical cases, 
-                  and suggest optimal resolution strategies.
+                  Once submitted, our AI will: classify intent → search historical cases → 
+                  analyze geo-clusters → generate officer insights
                 </p>
               </div>
             </div>
 
+            {isSubmitting && processingStage && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-4 rounded-lg bg-info/10 border border-info/20 flex items-center gap-3"
+              >
+                <Sparkles className="h-5 w-5 text-info animate-pulse" />
+                <span className="text-sm font-medium">{processingStage}</span>
+              </motion.div>
+            )}
+
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(2)}>
+              <Button variant="outline" onClick={() => setStep(2)} disabled={isSubmitting}>
                 Back
               </Button>
               <Button
@@ -328,7 +401,7 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Submitting...
+                    Processing...
                   </>
                 ) : (
                   <>
@@ -353,22 +426,39 @@ export function SubmitGrievanceForm({ onClose, onSubmit }: SubmitGrievanceFormPr
             </div>
             <h3 className="text-xl font-bold mb-2">Grievance Submitted!</h3>
             <p className="text-muted-foreground mb-4">
-              Your ticket has been created and assigned to the relevant department.
+              Your ticket has been created and AI analysis is complete.
             </p>
-            <div className="p-4 rounded-lg bg-muted inline-block">
+            <div className="p-4 rounded-lg bg-muted inline-block mb-4">
               <p className="text-sm text-muted-foreground">Ticket Number</p>
-              <p className="text-xl font-mono font-bold">SGH-2024-001239</p>
+              <p className="text-xl font-mono font-bold">{ticketNumber}</p>
             </div>
-            <div className="mt-6">
-              <Button variant="accent" onClick={() => {
-                setStep(1);
-                setDescription('');
-                setCategory(null);
-                setLocation(null);
-              }}>
-                Submit Another Grievance
-              </Button>
-            </div>
+
+            {aiClassification && (
+              <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-left mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-semibold">AI Classification</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p><span className="text-muted-foreground">Category:</span> {aiClassification.title || aiClassification.category}</p>
+                  <p><span className="text-muted-foreground">Urgency:</span> {aiClassification.urgency}</p>
+                  <p><span className="text-muted-foreground">Confidence:</span> {Math.round((aiClassification.confidence || 0) * 100)}%</p>
+                </div>
+              </div>
+            )}
+
+            <Button variant="accent" onClick={() => {
+              setStep(1);
+              setDescription('');
+              setCategory(null);
+              setLocation(null);
+              setCitizenName('');
+              setCitizenPhone('');
+              setTicketNumber('');
+              setAiClassification(null);
+            }}>
+              Submit Another Grievance
+            </Button>
           </motion.div>
         )}
       </CardContent>
