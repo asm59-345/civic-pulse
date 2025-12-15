@@ -14,7 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      geo_clusters: {
+        Row: {
+          category: Database["public"]["Enums"]["grievance_category"]
+          center_lat: number
+          center_lng: number
+          created_at: string | null
+          grievance_count: number | null
+          id: string
+          radius_meters: number | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["grievance_status"] | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["grievance_category"]
+          center_lat: number
+          center_lng: number
+          created_at?: string | null
+          grievance_count?: number | null
+          id?: string
+          radius_meters?: number | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["grievance_status"] | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["grievance_category"]
+          center_lat?: number
+          center_lng?: number
+          created_at?: string | null
+          grievance_count?: number | null
+          id?: string
+          radius_meters?: number | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["grievance_status"] | null
+        }
+        Relationships: []
+      }
+      grievance_archive: {
+        Row: {
+          category: Database["public"]["Enums"]["grievance_category"]
+          created_at: string | null
+          description: string
+          id: string
+          original_grievance_id: string | null
+          resolution: string | null
+          similarity_keywords: string[] | null
+          time_to_resolve_hours: number | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["grievance_category"]
+          created_at?: string | null
+          description: string
+          id?: string
+          original_grievance_id?: string | null
+          resolution?: string | null
+          similarity_keywords?: string[] | null
+          time_to_resolve_hours?: number | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["grievance_category"]
+          created_at?: string | null
+          description?: string
+          id?: string
+          original_grievance_id?: string | null
+          resolution?: string | null
+          similarity_keywords?: string[] | null
+          time_to_resolve_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grievance_archive_original_grievance_id_fkey"
+            columns: ["original_grievance_id"]
+            isOneToOne: false
+            referencedRelation: "grievances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grievances: {
+        Row: {
+          ai_classification: Json | null
+          ai_suggestion: Json | null
+          assigned_officer_id: string | null
+          attachments: string[] | null
+          category: Database["public"]["Enums"]["grievance_category"] | null
+          citizen_email: string | null
+          citizen_name: string
+          citizen_phone: string | null
+          created_at: string | null
+          description: string
+          feedback: number | null
+          geo_cluster_id: string | null
+          id: string
+          location_address: string | null
+          location_lat: number | null
+          location_lng: number | null
+          location_ward: string | null
+          similar_cases: Json | null
+          status: Database["public"]["Enums"]["grievance_status"] | null
+          ticket_number: string
+          title: string
+          updated_at: string | null
+          urgency: Database["public"]["Enums"]["urgency_level"] | null
+        }
+        Insert: {
+          ai_classification?: Json | null
+          ai_suggestion?: Json | null
+          assigned_officer_id?: string | null
+          attachments?: string[] | null
+          category?: Database["public"]["Enums"]["grievance_category"] | null
+          citizen_email?: string | null
+          citizen_name: string
+          citizen_phone?: string | null
+          created_at?: string | null
+          description: string
+          feedback?: number | null
+          geo_cluster_id?: string | null
+          id?: string
+          location_address?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_ward?: string | null
+          similar_cases?: Json | null
+          status?: Database["public"]["Enums"]["grievance_status"] | null
+          ticket_number: string
+          title: string
+          updated_at?: string | null
+          urgency?: Database["public"]["Enums"]["urgency_level"] | null
+        }
+        Update: {
+          ai_classification?: Json | null
+          ai_suggestion?: Json | null
+          assigned_officer_id?: string | null
+          attachments?: string[] | null
+          category?: Database["public"]["Enums"]["grievance_category"] | null
+          citizen_email?: string | null
+          citizen_name?: string
+          citizen_phone?: string | null
+          created_at?: string | null
+          description?: string
+          feedback?: number | null
+          geo_cluster_id?: string | null
+          id?: string
+          location_address?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_ward?: string | null
+          similar_cases?: Json | null
+          status?: Database["public"]["Enums"]["grievance_status"] | null
+          ticket_number?: string
+          title?: string
+          updated_at?: string | null
+          urgency?: Database["public"]["Enums"]["urgency_level"] | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +177,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      grievance_category:
+        | "infrastructure"
+        | "sanitation"
+        | "water"
+        | "electricity"
+        | "health"
+        | "police"
+        | "other"
+      grievance_status: "pending" | "active" | "resolved" | "urgent"
+      urgency_level: "low" | "medium" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +313,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      grievance_category: [
+        "infrastructure",
+        "sanitation",
+        "water",
+        "electricity",
+        "health",
+        "police",
+        "other",
+      ],
+      grievance_status: ["pending", "active", "resolved", "urgent"],
+      urgency_level: ["low", "medium", "high", "critical"],
+    },
   },
 } as const
