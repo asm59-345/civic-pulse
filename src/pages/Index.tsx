@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -14,14 +14,54 @@ import {
   Clock,
   Shield,
   Zap,
-  Users
+  Users,
+  Bot
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SubmitGrievanceForm } from '@/components/citizen/SubmitGrievanceForm';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import gsap from 'gsap';
 
 const Index = () => {
   const [showSubmitForm, setShowSubmitForm] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // GSAP animations
+    if (heroRef.current) {
+      const heroElements = heroRef.current.querySelectorAll('.gsap-hero');
+      gsap.fromTo(
+        heroElements,
+        { opacity: 0, y: 40 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.8, 
+          stagger: 0.15, 
+          ease: 'power3.out' 
+        }
+      );
+    }
+
+    if (statsRef.current) {
+      const statCards = statsRef.current.querySelectorAll('.stat-card-gsap');
+      gsap.fromTo(
+        statCards,
+        { opacity: 0, y: 30, scale: 0.9 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1,
+          duration: 0.6, 
+          stagger: 0.1, 
+          ease: 'back.out(1.2)',
+          delay: 0.5
+        }
+      );
+    }
+  }, []);
 
   const features = [
     {
@@ -55,34 +95,58 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Floating Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-lg gradient-accent flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-accent-foreground" />
+            </div>
+            <span className="text-lg font-bold">SGH</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/ai-assistant" className="gap-2">
+                <Bot className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Assistant</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden pt-16">
         <div className="absolute inset-0 gradient-hero opacity-95" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2MmgtNHYtMnptMC04aDR2MmgtNHYtMnptLTggOGg0djJoLTR2LTJ6bTAtOGg0djJoLTR2LTJ6bS04IDhoNHYyaC00di0yem0wLThoNHYyaC00di0yeiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         
-        <div className="relative container mx-auto px-4 py-20 lg:py-32">
+        <div ref={heroRef} className="relative container mx-auto px-4 py-20 lg:py-32">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
+              <div className="gsap-hero inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
                 <Sparkles className="h-4 w-4 text-accent" />
                 <span className="text-sm text-white/90 font-medium">AI-Powered Civic Redressal</span>
               </div>
               
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              <h1 className="gsap-hero text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 Smart Grievance
                 <span className="block text-accent">Hub</span>
               </h1>
               
-              <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+              <p className="gsap-hero text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
                 From complaint to resolution, powered by intelligence. 
                 A next-generation civic platform that transforms how citizens interact with government.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="gsap-hero flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="xl" 
                   variant="accent" 
@@ -106,22 +170,20 @@ const Index = () => {
             </motion.div>
 
             {/* Stats Bar */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+            <div
+              ref={statsRef}
               className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               {stats.map((stat, index) => (
-                <div 
+                <div
                   key={stat.label}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+                  className="stat-card-gsap bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
                 >
                   <p className="text-3xl md:text-4xl font-bold text-white">{stat.value}</p>
                   <p className="text-sm text-white/60">{stat.label}</p>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </div>
 
