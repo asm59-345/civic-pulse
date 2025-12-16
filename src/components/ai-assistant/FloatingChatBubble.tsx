@@ -10,11 +10,18 @@ export function FloatingChatBubble() {
   const [mode, setMode] = useState<'citizen' | 'officer'>('citizen');
   const bubbleRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const tweenRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
-    if (bubbleRef.current) {
+    // Clean up previous tween if exists
+    if (tweenRef.current) {
+      tweenRef.current.kill();
+      tweenRef.current = null;
+    }
+
+    if (!isOpen && bubbleRef.current) {
       // Pulse animation on bubble
-      gsap.to(bubbleRef.current, {
+      tweenRef.current = gsap.to(bubbleRef.current, {
         scale: 1.05,
         duration: 1.5,
         repeat: -1,
@@ -22,7 +29,14 @@ export function FloatingChatBubble() {
         ease: 'power1.inOut',
       });
     }
-  }, []);
+
+    return () => {
+      if (tweenRef.current) {
+        tweenRef.current.kill();
+        tweenRef.current = null;
+      }
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
