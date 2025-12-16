@@ -15,12 +15,16 @@ import {
   Shield,
   Zap,
   Users,
-  Bot
+  Bot,
+  Search,
+  HelpCircle,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SubmitGrievanceForm } from '@/components/citizen/SubmitGrievanceForm';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import gsap from 'gsap';
 
 const Index = () => {
@@ -104,16 +108,37 @@ const Index = () => {
             </div>
             <span className="text-lg font-bold">SGH</span>
           </div>
-          <div className="flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/track" className="gap-2">
+                <Search className="h-4 w-4" />
+                Track Status
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/about" className="gap-2">
+                <Info className="h-4 w-4" />
+                About
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/faq" className="gap-2">
+                <HelpCircle className="h-4 w-4" />
+                FAQs
+              </Link>
+            </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/ai-assistant" className="gap-2">
                 <Bot className="h-4 w-4" />
-                <span className="hidden sm:inline">AI Assistant</span>
+                AI Assistant
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/dashboard">Dashboard</Link>
             </Button>
+          </nav>
+          <div className="flex items-center gap-2">
+            <LanguageSelector variant="minimal" />
             <ThemeToggle />
           </div>
         </div>
@@ -326,8 +351,9 @@ const Index = () => {
                   size="xl" 
                   variant="glass"
                   className="text-white border-white/30 hover:bg-white/10"
+                  asChild
                 >
-                  Track Existing Ticket
+                  <Link to="/track">Track Existing Ticket</Link>
                 </Button>
               </div>
             </div>
@@ -354,18 +380,18 @@ const Index = () => {
             <div>
               <h4 className="font-semibold text-sidebar-foreground mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-sidebar-foreground/60">
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">Submit Grievance</a></li>
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">Track Status</a></li>
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">FAQs</a></li>
+                <li><button onClick={() => setShowSubmitForm(true)} className="hover:text-sidebar-foreground transition-colors">Submit Grievance</button></li>
+                <li><Link to="/track" className="hover:text-sidebar-foreground transition-colors">Track Status</Link></li>
+                <li><Link to="/faq" className="hover:text-sidebar-foreground transition-colors">FAQs</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold text-sidebar-foreground mb-4">Government</h4>
               <ul className="space-y-2 text-sm text-sidebar-foreground/60">
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">Officer Portal</a></li>
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">Transparency Report</a></li>
-                <li><a href="#" className="hover:text-sidebar-foreground transition-colors">API Documentation</a></li>
+                <li><Link to="/dashboard" className="hover:text-sidebar-foreground transition-colors">Officer Portal</Link></li>
+                <li><Link to="/about" className="hover:text-sidebar-foreground transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-sidebar-foreground transition-colors">Contact Us</Link></li>
               </ul>
             </div>
             
